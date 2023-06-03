@@ -8,9 +8,10 @@ from exif import Image
 from geopy import Nominatim
 
 
-def getPlace(lat, lon):
+def getPlace(lat, lon, latRef, lonRef):
     lat = getDecimalType(lat)
     lon = getDecimalType(lon)
+    lat, lon = getSignedLatLon(lat, lon, latRef, lonRef)
     locator = Nominatim(user_agent="myGeocoder")
     coordinates = str(lat) + ", " + str(lon)
     location = locator.reverse(coordinates)
@@ -46,6 +47,15 @@ def getImageMetadata(path):
     return metadata
 
 
+def getSignedLatLon(lat, lon, latRef, lonRef):
+    if latRef.lower() == 's':
+        lat = -lat
+    if lonRef.lower() == 'w':
+        lon = -lon
+
+    return lat, lon
+
+
 imageExtensions = (".jpg", ".jpeg", ".png", ".gif", ".tiff", ".bmp")
 videoExtensions = (".mp4", ".avi", ".mov", ".wmv", ".flv", ".mkv")
 
@@ -64,8 +74,10 @@ if __name__ == '__main__':
                     info = getImageMetadata(item.absolute())
                     if info['gps_latitude'] and info['gps_longitude']:
                         lat = info['gps_latitude']
+                        latitude_ref = info['gps_latitude_ref']
                         lon = info['gps_longitude']
-                        place = getPlace(lat, lon)
+                        longitude_ref = info['gps_longitude_ref']
+                        place = getPlace(lat, lon, latitude_ref, longitude_ref)
                     else:
                         print("No GPS data")
                 elif item.suffix in videoExtensions:
