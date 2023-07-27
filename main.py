@@ -1,5 +1,7 @@
 import json
+import os.path
 import pathlib
+import shutil
 import sys
 from urllib.request import urlopen
 
@@ -15,7 +17,6 @@ def getPlace(lat, lon, latRef, lonRef):
     locator = Nominatim(user_agent="myGeocoder")
     coordinates = str(lat) + ", " + str(lon)
     location = locator.reverse(coordinates)
-    print(location.raw)
     return location.raw
 
 
@@ -56,6 +57,19 @@ def getSignedLatLon(lat, lon, latRef, lonRef):
     return lat, lon
 
 
+def createNewFolders(path, country, city):
+    folderPath = path + "/" + country + "/" + city
+    print(folderPath)
+    if not os.path.exists(folderPath):
+        os.makedirs(folderPath, exist_ok=True)
+        print("Created new folder: " + folderPath)
+
+def copyMedia(item, path, country, city):
+    folderPath = path + "/" + country + "/" + city
+    shutil.copy(item, folderPath)
+    print("Copy successful")
+
+
 imageExtensions = (".jpg", ".jpeg", ".png", ".gif", ".tiff", ".bmp")
 videoExtensions = (".mp4", ".avi", ".mov", ".wmv", ".flv", ".mkv")
 
@@ -78,6 +92,11 @@ if __name__ == '__main__':
                         lon = info['gps_longitude']
                         longitude_ref = info['gps_longitude_ref']
                         place = getPlace(lat, lon, latitude_ref, longitude_ref)
+                        print(place)
+                        print(place['address']['country'])
+                        print(place['address']['city'])
+                        createNewFolders(path, place['address']['country'], place['address']['city'])
+                        copyMedia(item, path, place['address']['country'], place['address']['city'])
                     else:
                         print("No GPS data")
                 elif item.suffix in videoExtensions:
