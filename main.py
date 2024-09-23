@@ -170,3 +170,4 @@ if __name__ == '__main__':
         print("Script must receive one argument (path)")
 
     window.mainloop()
+
